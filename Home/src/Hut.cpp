@@ -75,7 +75,7 @@ int main()
         setcolor(0);
         settextstyle(7, 0, 5);
 
-        outtextxy(0 + i, 390, stringData1);
+        outtextxy(0 + i, 392, stringData1);
     }
     getch();
     closegraph();
