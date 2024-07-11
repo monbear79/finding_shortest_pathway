@@ -1,84 +1,136 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <conio.h>
-#include <graphics.h>
-int main()
-{
-    int gm, x, y, gd = DETECT, i;
-    // int midx, midy;
-    int stangle = 45, endangle = 50;
-    int radius = 50;
-    
-    char data[] = "C:\\MinGW\\lib\\libbgi.a"; //static file
+#include <iostream>
+#include <vector>
+#include <limits>
+#include <algorithm>
+#include <cstdlib>  // for rand() and srand()
+#include <ctime>    // for time()
+#include <graphics.h> // Include graphics.h if using a library like WinBGIm
+#include <cstdio>
+#include <cmath>    // for sin() and cos()
 
-    initgraph(&gd, &gm, data);
-    x = getmaxx(); // to get the co-ordinates i.e. x & y
-    y = getmaxy();
-    cleardevice();
-    line(200, 150, 350, 150);
-    line(140, 200, 200, 150);
-    line(140, 330, 140, 200);
-    line(250, 200, 140, 200);
-    line(200, 150, 250, 200);
-    circle(196, 180, 15);
-    setfillstyle(2, 14);
-    floodfill(196, 180, 15);
-    setfillstyle(1, 2);
-    line(350, 150, 400, 200);
-    floodfill(210, 180, 15);
-    line(400, 200, 400, 330);
-    line(140, 330, 400, 330);
-    line(250, 200, 250, 330);
-    line(250, 200, 400, 200); // Hut
+using namespace std;
 
-    setfillstyle(5, 7);
-    floodfill(260, 180, 15);
-    line(170, 260, 170, 330);
-    line(170, 260, 210, 260);
-    setfillstyle(10, 9);
-    floodfill(180, 250, 15);
-    line(210, 260, 210, 330);
-    setfillstyle(9, 9);
-    floodfill(210, 250, 15);
-    line(290, 110, 290, 150);
-    line(310, 110, 310, 150);
-    ellipse(300, 110, 0, 360, 10, 3); // Chemney
+const int INF = numeric_limits<int>::max();
 
-    setfillstyle(6, 8);
-    floodfill(300, 120, 15);
-    line(300, 250, 350, 250);
-    line(300, 280, 350, 280);
-    line(300, 250, 350, 280);
-    line(300, 280, 300, 250);
-    line(350, 280, 350, 250);
+struct Graph {
+    int V;
+    vector<vector<int>> adjMatrix;
+};
 
-    setfillstyle(9, 9);
-    floodfill(252, 300, 15);
-    setfillstyle(8, 9);
-    floodfill(342, 270, 15);
+void initGraph(Graph &g, int V) {
+    g.V = V;
+    g.adjMatrix = vector<vector<int>>(V, vector<int>(V, INF));
+}
 
-    setcolor(3);
-    /* draw arc */
-    arc(30, 300, stangle, endangle, radius);
+void addEdge(Graph &g, int u, int v, int w) {
+    g.adjMatrix[u][v] = w;
+    g.adjMatrix[v][u] = w;
+}
 
-    setcolor(7);
-    line(5, 330, 600, 330);
-    for (i = 0; i < 650; i = i + 10)
-    {
-        setcolor(4);
-        settextstyle(7, 0, 5);
-
-        char stringData1[] = "Home Sweet Home";
-
-        outtextxy(0 + i, 390, stringData1);
-        delay(100);
-        setcolor(0);
-        settextstyle(7, 0, 5);
-
-        outtextxy(0 + i, 390, stringData1);
+int tsp(const Graph &g, vector<int> &path, int pos, int visited, vector<vector<int>> &dp) {
+    if (visited == ((1 << g.V) - 1)) {
+        return g.adjMatrix[pos][0]; // return to the starting point
     }
+    
+    if (dp[pos][visited] != -1) {
+        return dp[pos][visited];
+    }
+    
+    int res = INF;
+    for (int i = 0; i < g.V; ++i) {
+        if ((visited & (1 << i)) == 0 && g.adjMatrix[pos][i] != INF) {
+            int newRes = g.adjMatrix[pos][i] + tsp(g, path, i, visited | (1 << i), dp);
+            if (newRes < res) {
+                res = newRes;
+                path[pos] = i;
+            }
+        }
+    }
+    
+    return dp[pos][visited] = res;
+}
+
+void drawGraph(const Graph &g, const vector<int> &bestPath) {
+    int gd = DETECT, gm;
+    char driver[] = "";
+    initgraph(&gd, &gm, driver);
+
+    int width = getmaxx();
+    int height = getmaxy();
+    int radius = min(width, height) / 3;
+
+    int centerX = width / 2;
+    int centerY = height / 2;
+
+    vector<pair<int, int>> positions(g.V);
+    for (int i = 0; i < g.V; i++) {
+        double angle = 2 * M_PI * i / g.V;
+        int x = centerX + radius * cos(angle);
+        int y = centerY + radius * sin(angle);
+        positions[i] = {x, y};
+        circle(x, y, 20);
+
+        char label[10];
+        sprintf(label, "%d", i);
+        outtextxy(x - 10, y - 10, label);
+    }
+
+    for (int i = 0; i < g.V; i++) {
+        int u = i;
+        int v = bestPath[i];
+        if (v != -1 && g.adjMatrix[u][v] != INF) {
+            line(positions[u].first, positions[u].second, positions[v].first, positions[v].second);
+        }
+    }
+
     getch();
     closegraph();
+}
+
+void generateRandomMatrix(Graph &g, int maxDistance) {
+    srand(time(0));  // Initialize random number generator
+    for (int i = 0; i < g.V; i++) {
+        for (int j = i; j < g.V; j++) {
+            if (i == j) {
+                g.adjMatrix[i][j] = 0;
+            } else {
+                int randomDistance = rand() % maxDistance + 1;
+                g.adjMatrix[i][j] = randomDistance;
+                g.adjMatrix[j][i] = randomDistance; // Ensure symmetry
+            }
+        }
+    }
+}
+
+int main() {
+    int V;
+    cout << "Enter number of post offices: ";
+    cin >> V;
+
+    Graph g;
+    initGraph(g, V);
+
+    int maxDistance;
+    cout << "Enter the maximum distance between post offices: ";
+    cin >> maxDistance;
+
+    generateRandomMatrix(g, maxDistance);
+
+    cout << "Random distance matrix:" << endl;
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            cout << g.adjMatrix[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    vector<int> path(V, -1);
+    vector<vector<int>> dp(V, vector<int>((1 << V), -1));
+    int res = tsp(g, path, 0, 1, dp);
+
+    cout << "Minimum travel distance: " << res << endl;
+
+    drawGraph(g, path);
 
     return 0;
 }
