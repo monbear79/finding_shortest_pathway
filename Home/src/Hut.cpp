@@ -27,9 +27,27 @@ void addEdge(Graph &g, int u, int v, int w) {
     g.adjMatrix[v][u] = w;
 }
 
+<<<<<<< HEAD
 int tsp(const Graph &g, vector<int> &path, int pos, int visited, vector<vector<int>> &dp) {
     if (visited == ((1 << g.V) - 1)) {
         return g.adjMatrix[pos][0]; // return to the starting point
+=======
+    setcolor(7);
+    line(5, 330, 600, 330);
+    for (i = 0; i < 650; i = i + 10)
+    {
+        setcolor(4);
+        settextstyle(7, 0, 5);
+
+        char stringData1[] = "Home Sweet Home";
+
+        outtextxy(0 + i, 390, stringData1);
+        delay(100);
+        setcolor(0);
+        settextstyle(7, 0, 5);
+
+        outtextxy(0 + i, 392, stringData1);
+>>>>>>> 3024eedbc3882dca1fa518a0cb17fe3928ad97dc
     }
     
     if (dp[pos][visited] != -1) {
@@ -132,5 +150,10 @@ int main() {
 
     drawGraph(g, path);
 
+<<<<<<< HEAD
     return 0;
 }
+=======
+    return 1 ;
+}
+>>>>>>> 3024eedbc3882dca1fa518a0cb17fe3928ad97dc
