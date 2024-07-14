@@ -109,6 +109,7 @@ void generateRandomMatrix(Graph &g, int maxDistance) {
     }
 }
 
+<<<<<<< HEAD
 void primMST(const Graph &g) {
     vector<int> key(g.V, INF);
     vector<bool> inMST(g.V, false);
@@ -142,6 +143,8 @@ void primMST(const Graph &g) {
     }
 }
 
+=======
+>>>>>>> 738cfc6ab9492d4cbef698005139758dcb8e4e34
 int main() {
     int V;
     cout << "Enter number of post offices: ";
@@ -172,7 +175,10 @@ int main() {
 
     drawGraph(g, path);
 
+<<<<<<< HEAD
     primMST(g);
 
+=======
+>>>>>>> 738cfc6ab9492d4cbef698005139758dcb8e4e34
     return 0;
 }
