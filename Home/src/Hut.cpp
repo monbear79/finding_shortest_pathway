@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <limits>
-#include <algorithm>
 #include <cstdlib>  // for rand() and srand()
 #include <ctime>    // for time()
 #include <graphics.h> // Include graphics.h if using a library like WinBGIm
@@ -11,6 +10,7 @@
 using namespace std;
 
 const int INF = numeric_limits<int>::max();
+const int COLORS[] = {RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE};
 
 struct Graph {
     int V;
@@ -19,7 +19,7 @@ struct Graph {
 
 void initGraph(Graph &g, int V) {
     g.V = V;
-    g.adjMatrix = vector<vector<int>>(V, vector<int>(V, INF));
+    g.adjMatrix.assign(V, vector<int>(V, INF));
 }
 
 void addEdge(Graph &g, int u, int v, int w) {
@@ -27,27 +27,9 @@ void addEdge(Graph &g, int u, int v, int w) {
     g.adjMatrix[v][u] = w;
 }
 
-<<<<<<< HEAD
 int tsp(const Graph &g, vector<int> &path, int pos, int visited, vector<vector<int>> &dp) {
-    if (visited == ((1 << g.V) - 1)) {
+    if (visited == (1 << g.V) - 1) {
         return g.adjMatrix[pos][0]; // return to the starting point
-=======
-    setcolor(7);
-    line(5, 330, 600, 330);
-    for (i = 0; i < 650; i = i + 10)
-    {
-        setcolor(4);
-        settextstyle(7, 0, 5);
-
-        char stringData1[] = "Home Sweet Home";
-
-        outtextxy(0 + i, 390, stringData1);
-        delay(100);
-        setcolor(0);
-        settextstyle(7, 0, 5);
-
-        outtextxy(0 + i, 392, stringData1);
->>>>>>> 3024eedbc3882dca1fa518a0cb17fe3928ad97dc
     }
     
     if (dp[pos][visited] != -1) {
@@ -70,18 +52,17 @@ int tsp(const Graph &g, vector<int> &path, int pos, int visited, vector<vector<i
 
 void drawGraph(const Graph &g, const vector<int> &bestPath) {
     int gd = DETECT, gm;
-    char driver[] = "";
+    char driver[] = "";  // Sửa đổi này loại bỏ cảnh báo
     initgraph(&gd, &gm, driver);
 
     int width = getmaxx();
     int height = getmaxy();
     int radius = min(width, height) / 3;
-
     int centerX = width / 2;
     int centerY = height / 2;
 
     vector<pair<int, int>> positions(g.V);
-    for (int i = 0; i < g.V; i++) {
+    for (int i = 0; i < g.V; ++i) {
         double angle = 2 * M_PI * i / g.V;
         int x = centerX + radius * cos(angle);
         int y = centerY + radius * sin(angle);
@@ -93,11 +74,19 @@ void drawGraph(const Graph &g, const vector<int> &bestPath) {
         outtextxy(x - 10, y - 10, label);
     }
 
-    for (int i = 0; i < g.V; i++) {
-        int u = i;
-        int v = bestPath[i];
-        if (v != -1 && g.adjMatrix[u][v] != INF) {
-            line(positions[u].first, positions[u].second, positions[v].first, positions[v].second);
+    for (int u = 0; u < g.V; ++u) {
+        for (int v = 0; v < g.V; ++v) {
+            if (u != v && g.adjMatrix[u][v] != INF) {
+                int colorIndex = rand() % (sizeof(COLORS) / sizeof(COLORS[0]));
+                setcolor(COLORS[colorIndex]);  // Dòng lệnh thiết lập màu sắc cho cạnh
+
+                int midX = (positions[u].first + positions[v].first) / 2;
+                int midY = (positions[u].second + positions[v].second) / 2;
+                char weightLabel[10];
+                sprintf(weightLabel, "%d", g.adjMatrix[u][v]);
+                line(positions[u].first, positions[u].second, positions[v].first, positions[v].second);
+                outtextxy(midX, midY, weightLabel);
+            }
         }
     }
 
@@ -107,8 +96,8 @@ void drawGraph(const Graph &g, const vector<int> &bestPath) {
 
 void generateRandomMatrix(Graph &g, int maxDistance) {
     srand(time(0));  // Initialize random number generator
-    for (int i = 0; i < g.V; i++) {
-        for (int j = i; j < g.V; j++) {
+    for (int i = 0; i < g.V; ++i) {
+        for (int j = i; j < g.V; ++j) {
             if (i == j) {
                 g.adjMatrix[i][j] = 0;
             } else {
@@ -117,6 +106,39 @@ void generateRandomMatrix(Graph &g, int maxDistance) {
                 g.adjMatrix[j][i] = randomDistance; // Ensure symmetry
             }
         }
+    }
+}
+
+void primMST(const Graph &g) {
+    vector<int> key(g.V, INF);
+    vector<bool> inMST(g.V, false);
+    vector<int> parent(g.V, -1);
+
+    key[0] = 0;
+
+    for (int count = 0; count < g.V - 1; ++count) {
+        int minKey = INF, u;
+
+        for (int v = 0; v < g.V; ++v) {
+            if (!inMST[v] && key[v] < minKey) {
+                minKey = key[v];
+                u = v;
+            }
+        }
+
+        inMST[u] = true;
+
+        for (int v = 0; v < g.V; ++v) {
+            if (g.adjMatrix[u][v] && !inMST[v] && g.adjMatrix[u][v] < key[v]) {
+                key[v] = g.adjMatrix[u][v];
+                parent[v] = u;
+            }
+        }
+    }
+
+    cout << "Edges in MST:" << endl;
+    for (int i = 1; i < g.V; ++i) {
+        cout << parent[i] << " - " << i << " with weight " << g.adjMatrix[i][parent[i]] << endl;
     }
 }
 
@@ -135,8 +157,8 @@ int main() {
     generateRandomMatrix(g, maxDistance);
 
     cout << "Random distance matrix:" << endl;
-    for (int i = 0; i < V; i++) {
-        for (int j = 0; j < V; j++) {
+    for (int i = 0; i < V; ++i) {
+        for (int j = 0; j < V; ++j) {
             cout << g.adjMatrix[i][j] << " ";
         }
         cout << endl;
@@ -150,10 +172,7 @@ int main() {
 
     drawGraph(g, path);
 
-<<<<<<< HEAD
+    primMST(g);
+
     return 0;
 }
-=======
-    return 1 ;
-}
->>>>>>> 3024eedbc3882dca1fa518a0cb17fe3928ad97dc
