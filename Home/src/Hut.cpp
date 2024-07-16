@@ -65,7 +65,7 @@ void movePostman(Point from, Point to, const vector<Point>& points, const vector
         drawPostman({x, y});
         setcolor(WHITE);
         settextstyle(SANS_SERIF_FONT, HORIZ_DIR, 1);
-        outtextxy(400, 10, const_cast<char*>(pathStream.str().c_str()));
+        outtextxy(400, 40, const_cast<char*>(pathStream.str().c_str()));
         delay(50);
     }
     pathStream << " --> " << to_string(bestPath[(startIndex + 1) % n] + 1);
@@ -117,7 +117,7 @@ int main() {
     vector<Point> points(n);
     vector<vector<double>> weights(n, vector<double>(n));
 
-    // Giới hạn tọa độ x từ 50 đến 950 và y từ 50 đến 650
+  
     for (int i = 0; i < n; ++i) {
         points[i].x = 50 + rand() % 950;
         points[i].y = 50 + rand() % 650;
@@ -140,6 +140,7 @@ int main() {
         for (int j = 0; j < n; ++j) {
             if (i != j) {
                 weights[i][j] = rand() % weightLimit + 1;
+                cout << "Trong so tu buu đien " << i + 1 << " den buu dien " << j + 1 << ": " << weights[i][j] << endl; // In ra trọng số
             } else {
                 weights[i][j] = 0;
             }
@@ -159,7 +160,7 @@ int main() {
     cout << endl;
     cout << "Tong do dai: " << minDist << endl;
 
-    initwindow(1000, 700); // Tăng kích thước cửa sổ đồ họa
+    initwindow(1000, 700); 
     for (int i = 0; i < n; ++i) {
         drawPoint(points[i], i, WHITE);
     }
